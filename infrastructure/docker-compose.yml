@@ -1,0 +1,43 @@
+version: '3.4'
+services:
+    ecco_geeks_bd:
+      image: ecco_geeks_bd
+      container_name: ecco_geeks_bd
+      build:
+        context: bd
+        target: ecco_geeks_bd
+      environment:
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        MYSQL_DATABASE: ${MYSQL_DATABASE}
+        MYSQL_USER: ${MYSQL_USER}
+        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      ports:
+        - 3306:3306
+      volumes:
+        - ../db:/var/lib/mysql
+
+    ecco_geeks_php7:
+      image: 'geekshubs/geekshubs-php-fpm74'
+      container_name: ecco_geeks_php7
+      depends_on:
+        - ecco_geeks_bd
+      restart: on-failure
+      links: 
+        - ecco_geeks_bd
+      labels:
+        logging: "enabled"
+      volumes:
+        - ./../app:/var/www/html
+  
+    ecco_geeks_apache:
+      image: ecco_geeks/apache_php7
+      container_name: ecco_geeks_apache
+      build:
+        context: apache_ecco_geeks
+        target: apache_ecco_geeks
+      links:
+        - ecco_geeks_php7
+      volumes:
+        - ../app:/var/www/html
+      ports:
+        - "80:80"
